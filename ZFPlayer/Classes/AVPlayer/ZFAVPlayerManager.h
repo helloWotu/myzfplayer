@@ -30,6 +30,7 @@
 
 @property (nonatomic, strong, readonly) AVURLAsset *asset;
 @property (nonatomic, strong, readonly) AVPlayerItem *playerItem;
+@property (nonatomic, strong) AVPlayerItemVideoOutput *snapshotOutput;
 @property (nonatomic, strong, readonly) AVPlayer *player;
 @property (nonatomic, assign) NSTimeInterval timeRefreshInterval;
 /// 视频请求头

@@ -25,6 +25,8 @@
 @property (nonatomic, strong) UIButton *playOrPauseBtn;
 /// 播放的当前时间
 @property (nonatomic, strong) UILabel *currentTimeLabel;
+/// 滑动显示的当前时间
+@property (nonatomic, strong) UILabel *currentSiderTimeLabel;
 /// 滑杆
 @property (nonatomic, strong) ZFSliderView *slider;
 /// 视频总时间
@@ -51,6 +53,14 @@
 /// 封面图
 @property (nonatomic, strong) UIImageView *coverImageView;
 
+@property (nonatomic, assign) BOOL isLive;
+
+@property (nonatomic, assign) NSTimeInterval liveTotalTime;
+
+@property (nonatomic, assign) NSTimeInterval currentLivePlayedTime;
+
+@property (nonatomic, assign) NSTimeInterval currentChangeTime;
+
 @end
 
 @implementation ZFCustomControlView1
@@ -67,17 +77,21 @@
         [self.bottomToolView addSubview:self.slider];
         [self.bottomToolView addSubview:self.totalTimeLabel];
         [self.bottomToolView addSubview:self.fullScreenBtn];
+        [self addSubview:self.currentSiderTimeLabel];
         [self addSubview:self.bottomPgrogress];
         [self addSubview:self.activity];
 
         self.autoFadeTimeInterval = 0.2;
-        self.autoHiddenTimeInterval = 2.5;
+        self.autoHiddenTimeInterval = 20000.5;
 
         // 设置子控件的响应事件
         [self makeSubViewsAction];
         
         [self resetControlView];
         self.clipsToBounds = YES;
+        self.isLive = NO;
+        
+        self.currentLivePlayedTime = 60 * 60;
     }
     return self;
 }
@@ -91,47 +105,97 @@
 
 - (void)sliderTouchBegan:(float)value {
     self.slider.isdragging = YES;
+    self.currentSiderTimeLabel.hidden = NO;
 }
 
 - (void)sliderTouchEnded:(float)value {
-    if (self.player.totalTime > 0) {
-        @weakify(self)
-        [self.player seekToTime:self.player.totalTime*value completionHandler:^(BOOL finished) {
-            @strongify(self)
-            if (finished) {
-                self.slider.isdragging = NO;
-            }
-        }];
-    } else {
-        self.slider.isdragging = NO;
+    if (self.isLive) {
+        if (self.liveTotalTime > 0) {
+
+            CGFloat disTime = self.liveTotalTime * (1-value);
+            self.currentChangeTime = disTime;
+            NSString *URLString = [[NSString stringWithFormat:@"https://testhwzblive.yunshicloud.com/ts14s9/qdid70.m3u8?mvtm=%f",disTime] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+            self.player.currentPlayerManager.assetURL = [NSURL URLWithString:URLString];
+            [self showControlView];
+            self.slider.isdragging = NO;
+        } else {
+            self.slider.isdragging = NO;
+        }
+        self.currentSiderTimeLabel.hidden = YES;
+    }else {
+        if (self.player.totalTime > 0) {
+            @weakify(self)
+            [self.player seekToTime:self.player.totalTime*value completionHandler:^(BOOL finished) {
+                @strongify(self)
+                if (finished) {
+                    self.slider.isdragging = NO;
+                }
+            }];
+        } else {
+            self.slider.isdragging = NO;
+        }
     }
+  
+ 
 }
 
 - (void)sliderValueChanged:(float)value {
-    if (self.player.totalTime == 0) {
-        self.slider.value = 0;
-        return;
+    if (self.isLive) {
+        if (self.liveTotalTime == 0) {
+            self.slider.value = 0;
+            return;
+        }
+        self.slider.isdragging = YES;
+        NSString *currentTimeString = [ZFUtilities convertTimeSecond:self.liveTotalTime*value];
+        self.currentSiderTimeLabel.text = currentTimeString;
+        self.currentSiderTimeLabel.hidden = NO;
+    }else {
+        if (self.player.totalTime == 0) {
+            self.slider.value = 0;
+            return;
+        }
+        self.slider.isdragging = YES;
+        NSString *currentTimeString = [ZFUtilities convertTimeSecond:self.player.totalTime*value];
+        self.currentTimeLabel.text = currentTimeString;
+        self.currentSiderTimeLabel.text = currentTimeString;
     }
-    self.slider.isdragging = YES;
-    NSString *currentTimeString = [ZFUtilities convertTimeSecond:self.player.totalTime*value];
-    self.currentTimeLabel.text = currentTimeString;
+   
 }
 
 - (void)sliderTapped:(float)value {
-    if (self.player.totalTime > 0) {
-        self.slider.isdragging = YES;
-        @weakify(self)
-        [self.player seekToTime:self.player.totalTime*value completionHandler:^(BOOL finished) {
-            @strongify(self)
-            if (finished) {
-                self.slider.isdragging = NO;
-                [self.player.currentPlayerManager play];
-            }
-        }];
-    } else {
-        self.slider.isdragging = NO;
-        self.slider.value = 0;
+    if (self.isLive) {
+
+        if (self.liveTotalTime > 0) {
+            self.slider.isdragging = YES;
+            
+            CGFloat disTime = self.liveTotalTime * (1-value);
+            self.currentChangeTime = disTime;
+            NSString *URLString = [[NSString stringWithFormat:@"https://testhwzblive.yunshicloud.com/ts14s9/qdid70.m3u8?mvtm=%f",disTime] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+            self.player.currentPlayerManager.assetURL = [NSURL URLWithString:URLString];
+            [self showControlView];
+            self.slider.isdragging = NO;
+        } else {
+            self.slider.isdragging = NO;
+            self.slider.value = 0;
+        }
+        self.currentSiderTimeLabel.hidden = YES;
+    }else {
+        if (self.player.totalTime > 0) {
+            self.slider.isdragging = YES;
+            @weakify(self)
+            [self.player seekToTime:self.player.totalTime*value completionHandler:^(BOOL finished) {
+                @strongify(self)
+                if (finished) {
+                    self.slider.isdragging = NO;
+                    [self.player.currentPlayerManager play];
+                }
+            }];
+        } else {
+            self.slider.isdragging = NO;
+            self.slider.value = 0;
+        }
     }
+
 }
 
 #pragma mark - action
@@ -202,6 +266,12 @@
     self.playOrPauseBtn.frame = CGRectMake(min_x, min_y, min_w, min_h);
     self.playOrPauseBtn.center = self.center;
     
+    min_w = 65;
+    min_h = 20;
+    min_x = self.center.x - min_w/2;
+    min_y = self.center.y + min_h + 10;
+    self.currentSiderTimeLabel.frame = CGRectMake(min_x, min_y, min_w, min_h);
+    
     min_x = (iPhoneX && self.player.isFullScreen) ? 44: 15;
     min_w = 62;
     min_h = 28;
@@ -254,6 +324,7 @@
     self.slider.value                = 0;
     self.slider.bufferValue          = 0;
     self.currentTimeLabel.text       = @"00:00";
+    self.currentSiderTimeLabel.text  = @"00:00";
     self.totalTimeLabel.text         = @"00:00";
     self.backgroundColor             = [UIColor clearColor];
     self.playOrPauseBtn.selected     = YES;
@@ -351,6 +422,7 @@
 - (void)sliderValueChanged:(CGFloat)value currentTimeString:(NSString *)timeString {
     self.slider.value = value;
     self.currentTimeLabel.text = timeString;
+    self.currentSiderTimeLabel.text = timeString;
     self.slider.isdragging = YES;
     [UIView animateWithDuration:0.3 animations:^{
         self.slider.sliderBtn.transform = CGAffineTransformMakeScale(1.2, 1.2);
@@ -479,10 +551,33 @@
 - (void)videoPlayer:(ZFPlayerController *)videoPlayer currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime {
     if (!self.slider.isdragging) {
         NSString *currentTimeString = [ZFUtilities convertTimeSecond:currentTime];
-        self.currentTimeLabel.text = currentTimeString;
+       
         NSString *totalTimeString = [ZFUtilities convertTimeSecond:totalTime];
-        self.totalTimeLabel.text = totalTimeString;
-        self.slider.value = videoPlayer.progress;
+        NSLog(@"currentTimeString:%@",currentTimeString);
+        
+        //直播判断
+        if (totalTime == 0 && videoPlayer.progress < 0.1 && currentTime > 0) {
+//            self.slider.value = videoPlayer.progress
+            
+            self.liveTotalTime = currentTime + self.currentLivePlayedTime;
+            totalTimeString = [ZFUtilities convertTimeSecond:currentTime + self.currentLivePlayedTime];
+            self.totalTimeLabel.text = totalTimeString;
+            
+            NSInteger disChangeTime = self.liveTotalTime - self.currentChangeTime;
+            self.currentSiderTimeLabel.text = [ZFUtilities convertTimeSecond:disChangeTime];
+            if (disChangeTime > 0) {
+               self.slider.value = 1 - (self.liveTotalTime - disChangeTime) / self.liveTotalTime;
+            }
+            //直播进度条跑满
+//            self.bottomPgrogress.value = 1.0;
+            self.isLive = YES;
+        }else {
+            self.currentTimeLabel.text = currentTimeString;
+            self.totalTimeLabel.text = totalTimeString;
+            self.slider.value = videoPlayer.progress;
+            self.isLive = NO;
+        }
+        
     }
     self.bottomPgrogress.value = videoPlayer.progress;
 }
@@ -590,6 +685,17 @@
     return _currentTimeLabel;
 }
 
+- (UILabel *)currentSiderTimeLabel {
+    if (!_currentSiderTimeLabel) {
+        _currentSiderTimeLabel = [[UILabel alloc] init];
+        _currentSiderTimeLabel.textColor = [UIColor redColor];
+        _currentSiderTimeLabel.font = [UIFont boldSystemFontOfSize:15.0f];
+        _currentSiderTimeLabel.textAlignment = NSTextAlignmentCenter;
+        _currentSiderTimeLabel.hidden = YES;
+    }
+    return _currentSiderTimeLabel;
+}
+
 - (ZFSliderView *)slider {
     if (!_slider) {
         _slider = [[ZFSliderView alloc] init];
@@ -599,6 +705,7 @@
         _slider.minimumTrackTintColor = [UIColor whiteColor];
         [_slider setThumbImage:ZFPlayer_Image(@"ZFPlayer_slider") forState:UIControlStateNormal];
         _slider.sliderHeight = 2;
+        _slider.value = 1;
     }
     return _slider;
 }

@@ -15,6 +15,7 @@
 #import <ZFPlayer/ZFPlayerControlView.h>
 #import "UIImageView+ZFCache.h"
 #import "ZFUtilities.h"
+#import "CustiomControlView.h"
 
 static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/635942-14593722fe3f0695.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240";
 
@@ -22,7 +23,7 @@ static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/
 
 @property (nonatomic, strong) ZFPlayerController *player;
 @property (nonatomic, strong) UIImageView *containerView;
-@property (nonatomic, strong) ZFCustomControlView1 *controlView;
+@property (nonatomic, strong) CustiomControlView *controlView;
 
 @end
 
@@ -39,7 +40,8 @@ static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/
     self.player.controlView = self.controlView;
     /// 设置退到后台继续播放
     self.player.pauseWhenAppResignActive = NO;
-    
+    self.player.forceDeviceOrientation = YES;
+    self.player.allowOrentitaionRotation = YES;
     @weakify(self)
     self.player.orientationWillChange = ^(ZFPlayerController * _Nonnull player, BOOL isFullScreen) {
         @strongify(self)
@@ -59,8 +61,16 @@ static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/
         }
     };
     
-    NSString *URLString = [@"http://flv3.bn.netease.com/tvmrepo/2018/6/H/9/EDJTRBEH9/SD/EDJTRBEH9-mobile.mp4" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    playerManager.assetURL = [NSURL URLWithString:URLString];
+    //https://testhwzblive.yunshicloud.com/ts14s9/qdid70.m3u8 直播流地址
+    //http://flv3.bn.netease.com/tvmrepo/2018/6/H/9/EDJTRBEH9/SD/EDJTRBEH9-mobile.mp4
+    
+     NSString *URLString1 = [@"http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    
+    
+    NSString *URLString2 = [@"http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    
+    NSString *URLString = [@"https://testhwzblive.yunshicloud.com/ts14s9/qdid70.m3u8" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    playerManager.assetURL = [NSURL URLWithString:URLString2];
     [self.controlView showTitle:@"自定义控制层" coverURLString:kVideoCover fullScreenMode:ZFFullScreenModeAutomatic];
 
 }
@@ -111,9 +121,9 @@ static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/
     return UIInterfaceOrientationMaskPortrait;
 }
 
-- (ZFCustomControlView1 *)controlView {
+- (CustiomControlView *)controlView {
     if (!_controlView) {
-        _controlView = [ZFCustomControlView1 new];
+        _controlView = [CustiomControlView new];
     }
     return _controlView;
 }

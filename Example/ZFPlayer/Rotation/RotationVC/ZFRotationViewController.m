@@ -19,6 +19,7 @@
 @property (nonatomic, strong) ZFPlayerController *player;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) ZFPlayerControlView *controlView;
+@property (nonatomic, strong) NSTimer *timer;
 
 @end
 
@@ -43,6 +44,17 @@
     playerManager.assetURL = [NSURL URLWithString:URLString];
     
     [self.controlView showTitle:@"视频标题" coverURLString:@"https://upload-images.jianshu.io/upload_images/635942-14593722fe3f0695.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" fullScreenMode:ZFFullScreenModeLandscape];
+    
+   self.timer =   [NSTimer scheduledTimerWithTimeInterval:2 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        UIImage *image  = [self.player.currentPlayerManager thumbnailImageAtCurrentTime];
+        
+    }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear: animated];
+    [self.timer invalidate];
+    self.timer = nil;
 }
 
 - (void)viewWillLayoutSubviews {

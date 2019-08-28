@@ -221,6 +221,41 @@ static NSString *const kPresentationSize         = @"presentationSize";
     return image;
 }
 
+/*
+ * 截取当前时间点，视频截图
+ */
+- (UIImage *)snapshotImage {
+    CMTime time = [self.snapshotOutput itemTimeForHostTime:CACurrentMediaTime()];
+    if ([self.snapshotOutput hasNewPixelBufferForItemTime:time]) {
+        CVPixelBufferRef lastSnapshotPixelBuffer = [self.snapshotOutput copyPixelBufferForItemTime:time itemTimeForDisplay:NULL];
+        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:lastSnapshotPixelBuffer];
+        CIContext *context = [CIContext contextWithOptions:NULL];
+        CGRect rect = CGRectMake(0,
+                                 0,
+                                 CVPixelBufferGetWidth(lastSnapshotPixelBuffer),
+                                 CVPixelBufferGetHeight(lastSnapshotPixelBuffer));
+        CGImageRef cgImage = [context createCGImage:ciImage fromRect:rect];
+        return [UIImage imageWithCGImage:cgImage];
+    }
+    return NULL;
+}
+
+
+-(UIImage *)screenshotsm3u8WithCurrentTime:(CMTime)currentTime playerItemVideoOutput:(AVPlayerItemVideoOutput *)output{
+    
+    CVPixelBufferRef pixelBuffer = [output copyPixelBufferForItemTime:currentTime itemTimeForDisplay:nil];
+    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+    CIContext *temporaryContext = [CIContext contextWithOptions:nil];
+    CGImageRef videoImage = [temporaryContext createCGImage:ciImage
+                                                   fromRect:CGRectMake(0, 0,
+                                                                       CVPixelBufferGetWidth(pixelBuffer),
+                                                                       CVPixelBufferGetHeight(pixelBuffer))];
+    UIImage *frameImg = [UIImage imageWithCGImage:videoImage];
+    CGImageRelease(videoImage);
+    CVBufferRelease(pixelBuffer);
+    return frameImg;
+}
+
 #pragma mark - private method
 
 /// Calculate buffer progress
@@ -249,6 +284,9 @@ static NSString *const kPresentationSize         = @"presentationSize";
 - (void)initializePlayer {
     _asset = [AVURLAsset URLAssetWithURL:self.assetURL options:self.requestHeader];
     _playerItem = [AVPlayerItem playerItemWithAsset:_asset];
+    self.snapshotOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:NULL];
+    [_playerItem removeOutput:self.snapshotOutput];
+    [_playerItem addOutput:self.snapshotOutput];
     _player = [AVPlayer playerWithPlayerItem:_playerItem];
     [self enableAudioTracks:YES inPlayerItem:_playerItem];
     

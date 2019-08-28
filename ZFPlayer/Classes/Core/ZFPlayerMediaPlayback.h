@@ -170,6 +170,8 @@ typedef NS_ENUM(NSInteger, ZFPlayerScalingMode) {
 /// Video UIImage at the current time.
 - (UIImage *)thumbnailImageAtCurrentTime;
 
+///
+- (UIImage *)snapshotImage;
 /// Use this method to seek to a specified time for the current player and to be notified when the seek operation is complete.
 - (void)seekToTime:(NSTimeInterval)time completionHandler:(void (^ __nullable)(BOOL finished))completionHandler;
 

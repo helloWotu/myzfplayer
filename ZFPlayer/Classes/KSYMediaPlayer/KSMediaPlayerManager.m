@@ -140,6 +140,10 @@
     }
 }
 
+- (UIImage *)snapshotImage {
+    return [self.player snapshotImage];
+}
+
 - (UIImage *)thumbnailImageAtCurrentTime {
     return [self.player thumbnailImageAtCurrentTime];
 }
