@@ -430,12 +430,9 @@
             if ([urlString containsString:@"?"]) {
                 urlString = [urlString componentsSeparatedByString:@"?"][0];
             }
-            self.currentPlayedImgView.hidden = NO;
-            self.currentPlayedImgView.image = [self.player.currentPlayerManager snapshotImage];//thumbnailImageAtCurrentTime
-//            self.currentPlayedImgView.image = [UIImage imageNamed:@"bg_default"];
-            self.currentPlayedImgView.backgroundColor = [UIColor redColor];
             NSString *URLString = [[NSString stringWithFormat:@"%@?mvtm=%f",urlString,self.liveCurrentChangeTime] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
             NSLog(@"urlString:%@",URLString);
+            [self showCurrentBitImage];
             self.player.currentPlayerManager.assetURL = [NSURL URLWithString:URLString];
             /// 左右滑动调节播放进度
             [self.portraitControlView sliderChangeEnded];
@@ -481,9 +478,9 @@
 /// 准备播放
 - (void)videoPlayer:(ZFPlayerController *)videoPlayer prepareToPlay:(NSURL *)assetURL {
     [self hideControlViewWithAnimated:NO];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.currentPlayedImgView.hidden = YES;
-    });
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        self.currentPlayedImgView.hidden = YES;
+//    });
     NSLog(@"准备播放准备播放准备播放准备播放准备播放准备播放");
     
 }
@@ -636,6 +633,12 @@
 
 #pragma mark - Private Method
 
+- (void)showCurrentBitImage {
+    self.currentPlayedImgView.hidden = NO;
+    self.currentPlayedImgView.image = [self.player.currentPlayerManager snapshotImage];//thumbnailImageAtCurrentTime
+//            self.currentPlayedImgView.image = [UIImage imageNamed:@"bg_default"];
+}
+
 - (void)sliderValueChangingValue:(CGFloat)value isForward:(BOOL)forward {
     if (self.horizontalPanShowControlView) {
         /// 显示控制层
@@ -761,8 +764,12 @@
         _portraitControlView = [[ZFCustomerPortraitControlView alloc] init];
         _portraitControlView.currentLivePlayedTime = self.currentLivePlayedTime;
         _portraitControlView.sliderTouchBegan = ^{
-          @strongify(self);
+          
 
+        };
+        _portraitControlView.changeUrlBlock = ^{
+          @strongify(self);
+            [self showCurrentBitImage];
         };
         _portraitControlView.sliderValueChanging = ^(CGFloat value, BOOL forward) {
             @strongify(self)

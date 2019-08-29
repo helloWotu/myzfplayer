@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, nullable) void(^sliderValueChangingLive)(CGFloat value,BOOL forward ,NSString *sliderTimeString);
 
+@property (nonatomic, copy) void(^changeUrlBlock)(void);
+
 /// slider滑动结束
 @property (nonatomic, copy, nullable) void(^sliderValueChanged)(CGFloat value);
 /// slider点击

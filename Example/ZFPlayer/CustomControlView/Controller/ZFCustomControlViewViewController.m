@@ -69,8 +69,8 @@ static NSString *kVideoCover = @"https://upload-images.jianshu.io/upload_images/
     
     NSString *URLString2 = [@"http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     
-    NSString *URLString = [@"https://testhwzblive.yunshicloud.com/ts14s9/qdid70.m3u8" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    playerManager.assetURL = [NSURL URLWithString:URLString2];
+    NSString *URLString = [@"http://testhwzblive.yunshicloud.com/ts14s9/dgizlg.m3u8" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    playerManager.assetURL = [NSURL URLWithString:URLString];
     [self.controlView showTitle:@"自定义控制层" coverURLString:kVideoCover fullScreenMode:ZFFullScreenModeAutomatic];
 
 }

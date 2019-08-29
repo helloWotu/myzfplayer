@@ -5,5 +5,5 @@ target 'ZFPlayer_Example' do
     pod 'FDFullscreenPopGesture'
     pod 'MJRefresh'
     pod 'ZFPlayer', :path => '../'
-
+    
 end

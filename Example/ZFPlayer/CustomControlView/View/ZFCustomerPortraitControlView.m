@@ -97,9 +97,9 @@
             if ([urlString containsString:@"?"]) {
                 urlString = [urlString componentsSeparatedByString:@"?"][0];
             }
-           
             NSString *URLString = [[NSString stringWithFormat:@"%@?mvtm=%f",urlString,disTime] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
              NSLog(@"urlString:%@",URLString);
+            self.changeUrlBlock();
             self.player.currentPlayerManager.assetURL = [NSURL URLWithString:URLString];
             [self showControlView];
             self.slider.isdragging = NO;
@@ -170,6 +170,7 @@
             
             NSString *URLString = [[NSString stringWithFormat:@"%@?mvtm=%f",urlString,disTime] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
             NSLog(@"urlString:%@",URLString);
+            self.changeUrlBlock();
             self.player.currentPlayerManager.assetURL = [NSURL URLWithString:URLString];
             
             [self showControlView];
